@@ -1,0 +1,34 @@
+#!/usr/bin/python
+import random
+import logging
+import argparse
+import os
+
+from cluling.arabic import AraBERT
+from cluling import ExperimentConfig
+
+if __name__ == "__main__":
+  parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+  parser.add_argument("-c", "--config", help='yaml file defining experiment')
+
+  args = parser.parse_args()
+
+  experiment = ExperimentConfig.from_file(args.config)
+  logging.basicConfig(
+    handlers=[logging.FileHandler(
+      # FIXME: rename logfile to use arabert-{conf-file-name}.log
+      filename=os.path.join(os.path.abspath(experiment.output_dir), f'arabert-{experiment.short_sha}.log'), encoding='utf-8', mode='w')
+    ],
+    format="%(asctime)s %(name)s:%(levelname)s:%(message)s",
+    datefmt='%m/%d/%Y %I:%M:%S %p',
+    level=logging.INFO,
+  )
+  logging.info(f"AraBERT experiment runner")
+  logging.info(f"Output location: {os.path.abspath(experiment.output_dir)}")
+  logging.info(f"Loading dataset...")
+  raw_ds     = experiment.dataset
+  logging.info(f"Total features: {len(raw_ds.features)}")
+  logging.info(f"Thresholding dataset by min. num. datapoints per label.")
+  ds         = experiment.threshold_classes(raw_ds, threshold=experiment.k * 2)
+
+  random.seed(experiment.seed)
