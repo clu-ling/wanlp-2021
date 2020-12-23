@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+cd /app
+
+echo "Running tests..."
+green -vvv --run-coverage /app
+
+echo "Checking types..."
+mypy \
+  --ignore-missing-imports \
+  --follow-imports=skip \
+  --strict-optional \
+  /app
