@@ -47,7 +47,7 @@ jobs:
       run: |
         green -vvv .
     - name: "Type checks (experiments)"
-      working-directory: .s
+      working-directory: .
       run: |
         mypy --ignore-missing-imports --follow-imports=skip --strict-optional .
     - name: "Build docker image (experiments)"
