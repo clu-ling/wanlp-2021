@@ -30,7 +30,7 @@ test_deps = ["green>=2.5.0,<3", "coverage", "mypy"]
 setup(name='cluling-arabic-nlp',
       packages=find_packages(),
       #packages=["cdd"],
-      scripts=['bin/train-transformer'],
+      scripts=['bin/train-arabert'],
       version=info.version,
       keywords=['nlp', 'cluling', 'arabic'],
       description=info.description,
