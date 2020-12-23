@@ -5,7 +5,7 @@ import argparse
 import os
 
 from cluling.arabic import AraBERT
-from cluling import ExperimentConfig
+from cluling.utils  import ExperimentConfig
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(formatter_class=argparse.ArgumentDefaultsHelpFormatter)
