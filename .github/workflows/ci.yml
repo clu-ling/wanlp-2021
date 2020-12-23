@@ -51,7 +51,7 @@ jobs:
       run: |
         mypy --ignore-missing-imports --follow-imports=skip --strict-optional .
     - name: "Build docker image (experiments)"
-      working-directory: ./experiments
+      working-directory: .
       run: docker build -f Dockerfile -t parsertongue/arabic-nlp:latest -t parsertongue/arabic-nlp:${{ steps.sha.outputs.sha_short }} .
     - name: "Publish docker image (experiments image)"
       if: github.ref == 'refs/heads/main'   
