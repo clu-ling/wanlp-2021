@@ -1,2 +1,3 @@
-# arabic-dialect-detection
-Arabic dialect detection.
+# arabic-nlp
+
+Models and utilities for Arabic NLP.
