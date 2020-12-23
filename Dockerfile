@@ -34,7 +34,7 @@ RUN pip install -U pytest==5.3.4
 
 RUN pip install torch==1.7.0+cu110 -f https://download.pytorch.org/whl/torch_stable.html
 RUN pip install torchvision==0.8.1+cu110 -f https://download.pytorch.org/whl/torch_stable.html
-RUN pip install torchaudio===0.7.0
+RUN pip install torchaudio==0.7.0
 
 # Project-specific deps
 # Bundle app source
