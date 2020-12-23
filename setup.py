@@ -4,7 +4,7 @@ from setuptools.command.install import install
 from setuptools.command.develop import develop
 from setuptools import setup
 
-from cdd.info import info
+from cluling.info import info
 
 class PackageDevelop(develop):
     def run(self):
