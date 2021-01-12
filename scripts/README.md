@@ -1,1 +1,2 @@
-<h1>First</h1>
+<h1>Dialect_country_level_experiement_1 </h1>
+<p>This experiement uses Aravec (300 - skipgram) and cnn-lstm network. The predicted labels are in the prediction_files folder. By using NADI scorer, we can get MACRO F1: 15.92%. These scores on dev and test predcited labels are also in the prediction_files folder </p>
