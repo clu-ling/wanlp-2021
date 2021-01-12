@@ -1,0 +1,19 @@
+//////////////////////////////////////////////////////////////////////
+// License for NADI Twitter Dataset
+//////////////////////////////////////////////////////////////////////
+
+Copyright 2021 The University of British Columbia, Canada. All Rights Reserved.
+
+This work is licensed under the Creative Commons Attribution-NonCommercial-
+NoDerivatives 4.0 International License.
+(https://creativecommons.org/licenses/by-nc-nd/4.0/)
+
+If you use this resource, cite:
+
+Muhammad Abdul-Mageed, Chiyu Zhang, Abdelrahim Elmadany, Nizar Habash, and Houda Bouamor.
+The Nuanced Arabic Dialect Identification Shared Task.
+In Proceedings of the Sixth Workshop for Arabic Natural Language Processing 
+at EACL 2021, Online, 2021.
+
+Please note that the final bibliographic entry for the Shared Task Overview paper to be cited will be available upon the publication of WANLP 2021 proceedings.
+//////////////////////////////////////////////////////////////////////
