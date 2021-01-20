@@ -108,4 +108,8 @@ ENV/
 .DS_Store
 .idea/
 
+<<<<<<< HEAD
 .aravec/
+=======
+.aravec/
+>>>>>>> 8d834e277db7e57d4191750ec222d28f91171b90
