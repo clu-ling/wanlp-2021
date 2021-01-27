@@ -142,8 +142,11 @@ class LinguisticFeatureEncoder(DictVectorizer):
       return self.transform(X)
 
 class DialectClassifier(object):
+  # FIXME: this should be rewritten to extend BaseEstimator and Predictor (see https://scikit-learn.org/stable/developers/develop.html#instantiation)
+  # That would require ... a) the tokenizer, label encoder, etc. to be fit and set as part of .fit(); b) not passing train_df to the constructor; c) passing X and y to .fit() and .predict()
+  # if we switch, ... note that "[...] every keyword argument accepted by __init__ should correspond to an attribute on the instance"
   def __init__(self, 
-    train_df,
+    train_df: pd.DataFrame,
     embeddings_file: str,
     vocab_size: int = 150000,
     # maximum number of tokens in a single doc
@@ -163,10 +166,10 @@ class DialectClassifier(object):
     self.w2v, self.embedding_matrix  = self.create_embeddings_matrix()
     self.WORD_EMBEDDING_DIM: int = self.w2v.vector_size
     self.label_encoder: LabelEncoder = self._fit_label_encoder()
-    self.NUM_CLASSES: int       = len(self.label_encoder.classes_)
-    self.ling_feature_encoder   = self._fit_ling_feature_encoder()
-    self.NUM_LING_FEATURES: int = self.ling_feature_encoder.size
-    self.clf: Model             = self.make_classifier()
+    self.NUM_CLASSES: int        = len(self.label_encoder.classes_)
+    self.ling_feature_encoder    = self._fit_ling_feature_encoder()
+    self.NUM_LING_FEATURES: int  = self.ling_feature_encoder.size
+    self.clf: Model              = self.make_classifier()
 
   def save(self, outfile="dialect-classifier.pkl") -> None:
     pickle.dump(outfile)
@@ -323,15 +326,15 @@ class DialectClassifier(object):
     """
     Method for training classifier
     """
-    clf = self.clf
+    clf                     = self.clf
     # preparing for embeddings
-    train_text = self.prepare_text(self.train_df[self.x_column])
-    train_labels = self.prepare_labels(self.train_df[self.y_column])
+    train_text              = self.prepare_text(self.train_df[self.x_column])
+    train_labels            = self.prepare_labels(self.train_df[self.y_column])
     
     train_index, test_index = self.stratify(train_text, train_labels)
 
     # prepare training for ling
-    train_ling = self.prepare_linguistic_text(train_df[self.x_column].astype(str))
+    train_ling              = self.prepare_linguistic_text(self.train_df[self.x_column].astype(str))
     
     # fit the model
     clf.fit(
