@@ -81,7 +81,8 @@ The performance of submitted systems of subtask-1.1 and subtask-1.2 will be eval
 
 The performance of submitted systems of subtask-2.1 and subtask-2.2 will be evaluated on predictions of province labels for tweets in test set (release later).
 
-IMPORTANT: Participants are NOT allowed to use **MSA_dev_labeled.tsv** or **DA_dev_labeled.tsv** for training purposes. Participants must report the performance of their best system on both DEV *and* TEST sets in their Shared Task system description paper.
+IMPORTANT: Participants are NOT allowed to use **MSA_dev_labeled.tsv** or **DA_dev_labeled.tsv** for training purposes. 
+Participants must report the performance of their best system on both DEV *and* TEST sets in their Shared Task system description paper.
 
 IMPORTANT: Participants can only use the official TRAIN sets and tweets ***text*** of NADI2021-unlabeled_10M.tsv obtained through "NADI2021-Obtain-Tweets.py". 
 
