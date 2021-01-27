@@ -385,11 +385,11 @@ if __name__ == "__main__":
     help="training data file"
   )
   parser.add_argument(
-    "--test", 
-    dest="test_file", 
+    "--predict", 
+    dest="predict_file", 
     type=str,
     default="DA_dev_labeled.tsv", 
-    help="data file for which predictions should be generated.  Could be dev, test, or other data."
+    help="data file for which predictions should be generated.  Could correspond to dev, test, or other data."
   )
   parser.add_argument(
     "--embeddings", 
@@ -451,7 +451,7 @@ if __name__ == "__main__":
   args = parser.parse_args()
   train_file: str             = args.input_file
   # file used to evaluate data.  Could be "dev" or "test"
-  test_file: str              = args.test_file
+  predict_file: str           = args.predict_file
   w2v_embeddings_file: str    = args.embeddings_file
   out_file: str               = args.output_file
   x_column: str               = "#2_tweet"
@@ -473,7 +473,7 @@ if __name__ == "__main__":
   )
 
   logging.debug(f"train_file:            {train_file}")
-  logging.debug(f"test_file:             {test_file}")
+  logging.debug(f"predict_file:          {predict_file}")
   logging.debug(f"x_column:              {x_column}")
   logging.debug(f"y_column:              {y_column}")
   logging.debug(f"out_file:              {out_file}")
@@ -484,12 +484,11 @@ if __name__ == "__main__":
   logging.debug(f"batch_size:            {batch_size}")
 
   train_df                    = load_data(train_file)
-  test_df                     = load_data(test_file)
+  predict_df                  = load_data(predict_file)
 
   # normalize text data
-  train_df[x_column] = train_df[x_column].progress_apply(lambda text: normalize(text))
-  dev_df[x_column]   = dev_df[x_column].progress_apply(lambda text: normalize(text))
-  test_df[x_column]  = test_df[x_column].progress_apply(lambda text: normalize(text))
+  train_df[x_column]    = train_df[x_column].progress_apply(lambda text: normalize(text))
+  predict_df[x_column]  = predict_df[x_column].progress_apply(lambda text: normalize(text))
 
   clf = DialectClassifier(
     train_df=train_df,
@@ -506,7 +505,7 @@ if __name__ == "__main__":
   )
   # predict and write to out file 
   clf.predict(
-    df=test_df, 
+    df=predict_df, 
     out_file=out_file,
     batch_size=batch_size
   )
