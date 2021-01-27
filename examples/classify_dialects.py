@@ -1,6 +1,7 @@
 from typing import Dict, Literal
 import logging
 import argparse
+import pickle
 import sys
 import re
 
@@ -167,6 +168,13 @@ class DialectClassifier(object):
     self.NUM_LING_FEATURES: int = self.ling_feature_encoder.size
     self.clf: Model             = self.make_classifier()
 
+  def save(self, outfile="dialect-classifier.pkl") -> None:
+    pickle.dump(outfile)
+
+  @staticmethod
+  def load(model_file: str = "dialect-classifier.pkl") -> "DialectClassifier":
+    return pickle.load(model_file)
+  
   def _create_tokenizer(self) -> Tokenizer:
     """
     Fits word-piece tokenizer
@@ -200,7 +208,6 @@ class DialectClassifier(object):
     lfe    = self.ling_feature_encoder
     ling_x = lfe.transform(l)
     return ling_x
-
 
   def _fit_label_encoder(self):
     le = LabelEncoder()
@@ -454,6 +461,8 @@ if __name__ == "__main__":
   predict_file: str           = args.predict_file
   w2v_embeddings_file: str    = args.embeddings_file
   out_file: str               = args.output_file
+  # file name to use when serializing trained model
+  model_file: str             = "dialect-classifier.pkl"
   x_column: str               = "#2_tweet"
   y_column: str               = "#3_country_label"
   vocab_size: int             = args.vocab_size
@@ -509,3 +518,7 @@ if __name__ == "__main__":
     out_file=out_file,
     batch_size=batch_size
   )
+
+  # save model
+  logging.debug(f"Saving trained model to {model_file}")
+  clf.save(model_file)
