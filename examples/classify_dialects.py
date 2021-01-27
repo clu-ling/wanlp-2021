@@ -310,7 +310,7 @@ class DialectClassifier(object):
 
   def fit(
     self, 
-    num_epochs=10, 
+    max_epochs=10, 
     batch_size=64
   ) -> None:
     """
@@ -334,7 +334,7 @@ class DialectClassifier(object):
         [train_text[test_index], train_ling[test_index]], 
         train_labels[test_index]
       ),
-      epochs=num_epochs, 
+      epochs=max_epochs, 
       verbose=1, 
       batch_size=batch_size,
       callbacks = [EarlyStopping(monitor='val_loss', patience=2)]
@@ -408,10 +408,10 @@ if __name__ == "__main__":
   parser.add_argument(
     "--use-neg", 
     dest="use_negative_features", 
-    type=bool,
-    default=True, 
+    action="store_true",
     help="whether or not to use negative features"
   )
+  parser.set_defaults(use_negative_features=False)
   parser.add_argument(
     "--vocab-size", 
     dest="vocab_size", 
@@ -441,12 +441,13 @@ if __name__ == "__main__":
     help="batch size"
   )
   parser.add_argument(
-    "--verbose", 
+    "-v", "--verbose", 
     dest="verbose", 
-    type=bool,
-    default=True, 
+    action="store_true",
     help="verbose mode?"
   )
+  parser.set_defaults(verbose=False)
+
   args = parser.parse_args()
   train_file: str             = args.input_file
   # file used to evaluate data.  Could be "dev" or "test"
@@ -454,16 +455,14 @@ if __name__ == "__main__":
   w2v_embeddings_file: str    = args.embeddings_file
   out_file: str               = args.output_file
   x_column: str               = "#2_tweet"
-  y_column: str               = "3_country_label"
+  y_column: str               = "#3_country_label"
   vocab_size: int             = args.vocab_size
   # maximum number of tokens in a single doc
   max_seq_len: int            = args.max_seq_len
   use_negative_features: bool = args.use_negative_features
-  num_epochs: int             = args.max_epochs
+  max_epochs: int             = args.max_epochs
   batch_size: int             = args.batch_size
   verbose: bool               = args.verbose
-  train_df                    = load_data(train_file)
-  test_df                     = load_data(test_file)
 
   # configure logging
   logging.basicConfig(
@@ -472,6 +471,20 @@ if __name__ == "__main__":
     datefmt='%m/%d/%Y %I:%M:%S %p',
     level=logging.DEBUG if verbose else logging.INFO
   )
+
+  logging.debug(f"train_file:            {train_file}")
+  logging.debug(f"test_file:             {test_file}")
+  logging.debug(f"x_column:              {x_column}")
+  logging.debug(f"y_column:              {y_column}")
+  logging.debug(f"out_file:              {out_file}")
+  logging.debug(f"use_negative_features: {use_negative_features}")
+  logging.debug(f"vocab_size:            {vocab_size}")
+  logging.debug(f"max_seq_len:           {max_seq_len}")
+  logging.debug(f"max_epochs:            {max_epochs}")
+  logging.debug(f"batch_size:            {batch_size}")
+
+  train_df                    = load_data(train_file)
+  test_df                     = load_data(test_file)
 
   # normalize text data
   train_df[x_column] = train_df[x_column].progress_apply(lambda text: normalize(text))
@@ -488,12 +501,12 @@ if __name__ == "__main__":
   )
   # train
   clf.fit(
-    num_epochs=num_epochs,
+    max_epochs=max_epochs,
     batch_size=batch_size
   )
   # predict and write to out file 
   clf.predict(
     df=test_df, 
     out_file=out_file,
-    batch_size=50
+    batch_size=batch_size
   )
