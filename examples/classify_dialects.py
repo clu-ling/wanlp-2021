@@ -125,7 +125,7 @@ class LinguisticFeatureEncoder(DictVectorizer):
       pos_features = dict((feat, fn(datum)) for (feat, fn) in self.pos_features.items())
       neg_features = dict()
       if not self.use_negative_features:
-          return pos_features
+        return pos_features
       # assumes we're using positive features
       neg_features = dict((f"NOT_{feat}", not value) for (feat, value) in pos_features.items())
       return { **pos_features, **neg_features }
@@ -189,7 +189,7 @@ class DialectClassifier(object):
     #print ('\nTokenizer is working: ', tk)
     return tk
   
-  def prepare_text(self, x):
+  def _transform_text(self, x):
     """
     Tokenizes and pads text
     """
@@ -206,20 +206,24 @@ class DialectClassifier(object):
     ling_feature_encoder.fit(list(self.train_df[self.x_column].astype(str)))
     return ling_feature_encoder 
 
-  def prepare_linguistic_text(self, data):
-  
+  def _transform_ling(self, data):
+    """
+    Transform raw input to generate linguistic features
+    """
     lfe    = self.ling_feature_encoder
-    ling_x = lfe.transform(l)
-    return ling_x
+    return lfe.transform(l)
 
   def _fit_label_encoder(self):
     le = LabelEncoder()
     le.fit(self.train_y[self.y_column])
     return le
           
-  def prepare_labels(self, y):
-      y = self.label_encoder.transform(y)
-      return to_categorical(y, self.N_CLASSES)
+  def _transform_labels(self, y):
+    """
+    Transform raw input to labels compatible with training
+    """
+    y = self.label_encoder.transform(y)
+    return to_categorical(y, self.N_CLASSES)
 
   def create_embeddings_matrix(self):
     tk = self.tokenizer
@@ -260,17 +264,23 @@ class DialectClassifier(object):
     flat_c1       = Flatten()(drop_c1)
 
     ######## component 2 ########## 
-    inputs_c2     = Input(shape=(self.NUM_LING_FEATURES,))
-    embeddings_c2 = Embedding(
-      self.NUM_LING_FEATURES, 3, embeddings_initializer="uniform",embeddings_regularizer=None, activity_regularizer=None,embeddings_constraint=None, 
+    inputs_c2       = Input(shape=(self.NUM_LING_FEATURES,))
+    embeddings_c2   = Embedding(
+      self.NUM_LING_FEATURES, 
+      # num. dims
+      3,
+      embeddings_initializer="uniform",
+      embeddings_regularizer=None, 
+      activity_regularizer=None,
+      embeddings_constraint=None, 
       mask_zero=False, 
-      input_length=self.size,
+      input_length=self.NUM_LING_FEATURES,
       trainable=True
     )(inputs_c2)
-    dense_c2_1     = Dense(100, activation="relu")(embeddings_c2)
-    drop_c2        = Dropout(0.5)(dense_c2_1)
-    dense_c2_2     = Dense(100, activation="relu")(drop_c2)
-    flat_c2        = Flatten()(dense_c2_2)
+    dense_c2_1       = Dense(100, activation="relu")(embeddings_c2)
+    drop_c2          = Dropout(0.5)(dense_c2_1)
+    dense_c2_2       = Dense(100, activation="relu")(drop_c2)
+    flat_c2          = Flatten()(dense_c2_2)
     
     ling_regularizer = tf.Variable(
       tf.random.uniform(
@@ -287,14 +297,14 @@ class DialectClassifier(object):
     ling_regularized = Multiply()([flat_c2, ling_regularizer])
 
     # merge
-    merged = concatenate([flat_c1, ling_regularized])
+    merged           = concatenate([flat_c1, ling_regularized])
     # interpretation
-    hidden_1 = Dense(512, activation="relu")(merged)
-    drop_1 = Dropout(0.5)(hidden_1)
-    hidden_2   = Dense(256, activation="relu")(drop_1)
-    outputs       = Dense(self.NUM_CLASSES, activation="softmax")(hidden_2)#"softmax")(hidden_c2_2)
+    hidden_1         = Dense(512, activation="relu")(merged)
+    drop_1           = Dropout(0.5)(hidden_1)
+    hidden_2         = Dense(256, activation="relu")(drop_1)
+    outputs          = Dense(self.NUM_CLASSES, activation="softmax")(hidden_2)#"softmax")(hidden_c2_2)
     
-    model = Model(inputs=[inputs_c1, inputs_c2], outputs=outputs)
+    model            = Model(inputs=[inputs_c1, inputs_c2], outputs=outputs)
     # compile
     model.compile(
       loss='categorical_crossentropy', optimizer='adam', 
@@ -310,14 +320,15 @@ class DialectClassifier(object):
     """
     spiltter = StratifiedShuffleSplit(n_splits=1, test_size=0.2, random_state=0)
     spiltter.get_n_splits(x, y)
-    index = spiltter.split(x,y)
+    index    = spiltter.split(x,y)
     for i in index:
       train_index = i[0]
-      test_index = i[1]
-      logging.debug(len(i[0]))
-      logging.debug(len(i[1]))
+      test_index  = i[1]
+      # logging.debug(len(i[0]))
+      # logging.debug(len(i[1]))
     return train_index, test_index
 
+  # FIXME: this should be changed to take an X and y (see note preceding class constructor)
   def fit(
     self, 
     max_epochs=10, 
@@ -326,33 +337,33 @@ class DialectClassifier(object):
     """
     Method for training classifier
     """
-    clf                     = self.clf
+    clf                 = self.clf
     # preparing for embeddings
-    train_text              = self.prepare_text(self.train_df[self.x_column])
-    train_labels            = self.prepare_labels(self.train_df[self.y_column])
+    X_text              = self._transform_text(self.train_df[self.x_column])
+    y_labels            = self._transform_labels(self.train_df[self.y_column])
     
     train_index, test_index = self.stratify(train_text, train_labels)
 
     # prepare training for ling
-    train_ling              = self.prepare_linguistic_text(self.train_df[self.x_column].astype(str))
+    X_ling              = self._transform_ling(self.train_df[self.x_column].astype(str))
     
     # fit the model
     clf.fit(
-      [train_text[train_index], train_ling[train_index]],
-      train_labels[train_index],
+      [X_text[train_index], X_ling[train_index]],
+      y_labels[train_index],
       validation_data=(
-        [train_text[test_index], train_ling[test_index]], 
-        train_labels[test_index]
+        [X_text[test_index], X_ling[test_index]], 
+        y_labels[test_index]
       ),
       epochs=max_epochs, 
       verbose=1, 
       batch_size=batch_size,
-      callbacks = [EarlyStopping(monitor='val_loss', patience=2)]
+      callbacks=[EarlyStopping(monitor='val_loss', patience=2)]
     )
       
   def predict(
     self, 
-    df: pd.DataFrame,
+    X: pd.DataFrame,
     out_file: str,
     batch_size: int = 50
   ):
@@ -360,11 +371,11 @@ class DialectClassifier(object):
     Use trained classifier to make predictions
     """
     clf    = self.clf
-    X      = df[self.x_column].astype(str)
-    text_X = self.prepare_text(X)
-    ling_X = self.prepare_linguistic_text(X)
+    X_base = X[self.x_column].astype(str)
+    X_text = self._transform_text(X_base)
+    X_ling = self._transform_ling(X_base)
     y_hat  = model.predict(
-      [text_X, ling_X],
+      [X_text, X_ling],
       batch_size=batch_size, 
       verbose=1
     )
@@ -517,7 +528,7 @@ if __name__ == "__main__":
   )
   # predict and write to out file 
   clf.predict(
-    df=predict_df, 
+    X=predict_df, 
     out_file=out_file,
     batch_size=batch_size
   )
